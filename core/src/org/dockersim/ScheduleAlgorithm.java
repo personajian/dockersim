@@ -1,6 +1,5 @@
 package org.dockersim;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -15,7 +14,7 @@ public abstract class ScheduleAlgorithm {
 
     private List<Vm> vmList;
 
-    private VmProvisoner vmProvisoner;
+    private VmProvisoner vmProvisioner;
 
     public List<MicroFlow> getMicroFlows() {
         return microFlows;
@@ -41,14 +40,16 @@ public abstract class ScheduleAlgorithm {
         this.vmList = vmList;
     }
 
-    public VmProvisoner getVmProvisoner() {
-        return vmProvisoner;
+    public VmProvisoner getVmProvisioner() {
+        return vmProvisioner;
     }
 
-    public void setVmProvisoner(VmProvisoner vmProvisoner) {
-        this.vmProvisoner = vmProvisoner;
+    public void setVmProvisioner(VmProvisoner vmProvisioner) {
+        this.vmProvisioner = vmProvisioner;
     }
 
     public abstract void runSchedule();
+
+    public abstract double getTotalCost();
 
 }

@@ -13,6 +13,33 @@ public class Task {
 
     private int mfId;
 
+    private int taskId;
+
+    private List<Task> parentList;
+
+    private List<Task> childList;
+
+
+    private List<FileItem> fileList;
+
+    /*任务长度：parser解析出来的
+    runtime = 1000 * Double.parseDouble(nodeTime);
+    length = (long) runtime;
+    length *= Parameters.getRuntimeScale();*/
+    private double taskLength;
+
+    // todo runTime是任务实际的执行时长，后续代码完善时，与taskLength二选一！！！
+    private double runTime;
+
+    private String type;
+
+    private int userId;
+
+    private int depth;
+
+    private ResourceVector resourceVector;
+
+
     public int getMfId() {
         return mfId;
     }
@@ -21,65 +48,14 @@ public class Task {
         this.mfId = mfId;
     }
 
-    private List<Task> parentList;
 
-
-    private List<Task> childList;
-
-
-    private List<FileItem> fileList;
-
-    private boolean isDummyTask = false;
-
-    public boolean isDummyTask() {
-        return isDummyTask;
+    public ResourceVector getResourceVector() {
+        return resourceVector;
     }
 
-    public void setDummyTask(boolean dummyTask) {
-        isDummyTask = dummyTask;
+    public void setResourceVector(ResourceVector resourceVector) {
+        this.resourceVector = resourceVector;
     }
-
-    private int taskId;
-
-    /*任务长度：parser解析出来的
-    runtime = 1000 * Double.parseDouble(nodeTime);
-    length = (long) runtime;
-    length *= Parameters.getRuntimeScale();*/
-    private long taskLength;
-
-    // todo runTime是任务实际的执行时长，后续代码完善时，与taskLength二选一！！！
-    private int runTime;
-
-    private String type;
-
-    private int userId;
-
-    private int depth;
-
-    //add by cj
-    private int startTime;
-    private int finishTime;
-
-
-    private int est = -1;// 最早开始时间
-    private int eft = -1;// 最造完成时间
-    private int lst = -1;// 最晚开始时间
-    private int lft = -1;// 最晚完成时间
-    private int rank = -1;
-    private int subDeadline;
-    private double vcpu;
-    private double ram;
-    // 资源向量
-    private List<Integer> vector;
-
-    public List<Integer> getVector() {
-        return vector;
-    }
-
-    public void setVector(List<Integer> vector) {
-        this.vector = vector;
-    }
-
 
     public Task(){}
 
@@ -93,22 +69,6 @@ public class Task {
         this.childList = new ArrayList<>();
         this.parentList = new ArrayList<>();
         this.fileList = new ArrayList<>();
-        this.startTime = -1;
-        this.finishTime = -1;
-    }
-
-    public Task(boolean isDummyTask, int taskId, long taskLength,String type) {
-        this.isDummyTask = isDummyTask;
-        this.taskId = taskId;
-        this.taskLength = taskLength;
-        this.type = type;
-
-        this.childList = new ArrayList<>();
-        this.parentList = new ArrayList<>();
-        this.fileList = new ArrayList<>();
-        this.startTime = -1;
-        this.finishTime = -1;
-
     }
 
     private List<String> requiredFiles = null;   // list of required filenames
@@ -177,11 +137,11 @@ public class Task {
         this.taskId = taskId;
     }
 
-    public long getTaskLength() {
+    public double getTaskLength() {
         return taskLength;
     }
 
-    public void setTaskLength(long taskLength) {
+    public void setTaskLength(double taskLength) {
         this.taskLength = taskLength;
     }
 
@@ -209,86 +169,6 @@ public class Task {
         this.depth = depth;
     }
 
-    public int getStartTime() {
-        return startTime;
-    }
-
-    public void setStartTime(int startTime) {
-        this.startTime = startTime;
-    }
-
-    public int getFinishTime() {
-        return finishTime;
-    }
-
-    public void setFinishTime(int finishTime) {
-        this.finishTime = finishTime;
-    }
-
-    public int getEst() {
-        return est;
-    }
-
-    public void setEst(int est) {
-        this.est = est;
-    }
-
-    public int getEft() {
-        return eft;
-    }
-
-    public void setEft(int eft) {
-        this.eft = eft;
-    }
-
-    public int getLst() {
-        return lst;
-    }
-
-    public void setLst(int lst) {
-        this.lst = lst;
-    }
-
-    public int getLft() {
-        return lft;
-    }
-
-    public void setLft(int lft) {
-        this.lft = lft;
-    }
-
-    public int getRank() {
-        return rank;
-    }
-
-    public void setRank(int rank) {
-        this.rank = rank;
-    }
-
-    public int getSubDeadline() {
-        return subDeadline;
-    }
-
-    public void setSubDeadline(int subDeadline) {
-        this.subDeadline = subDeadline;
-    }
-
-    public double getVcpu() {
-        return vcpu;
-    }
-
-    public void setVcpu(double vcpu) {
-        this.vcpu = vcpu;
-    }
-
-    public double getRam() {
-        return ram;
-    }
-
-    public void setRam(double ram) {
-        this.ram = ram;
-    }
-
     public List<String> getRequiredFiles() {
         return requiredFiles;
     }
@@ -297,11 +177,11 @@ public class Task {
         this.requiredFiles = requiredFiles;
     }
 
-    public int getRunTime() {
+    public double getRunTime() {
         return runTime;
     }
 
-    public void setRunTime(int runTime) {
+    public void setRunTime(double runTime) {
         this.runTime = runTime;
     }
 
@@ -310,19 +190,7 @@ public class Task {
         return "Task{" +
                 "mfId=" + mfId +
                 ", taskId=" + taskId +
-                //", taskLength=" + taskLength +
-                ", type='" + type + '\'' +
-                ", vcpu=" + vcpu +
-                ", ram=" + ram +
-                ", st=" + startTime +
-                ", ft=" + finishTime +
-                ", est=" + est +
-                ", eft=" + eft +
-                ", lst=" + lst +
-                ", lft=" + lft +
-                ", rt=" + runTime +
-                ", rank=" + rank +
-                ", sbl=" + subDeadline +
+                ", runTime=" + runTime +
                 '}';
     }
 
@@ -331,28 +199,13 @@ public class Task {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Task task = (Task) o;
-        return taskId == task.taskId &&
-                taskLength == task.taskLength &&
-                userId == task.userId &&
-                depth == task.depth &&
-                Objects.equals(parentList, task.parentList) &&
-                Objects.equals(childList, task.childList) &&
-                Objects.equals(fileList, task.fileList) &&
-                Objects.equals(type, task.type);
+        return mfId == task.mfId &&
+                taskId == task.taskId;
     }
 
     @Override
     public int hashCode() {
 
-        return Objects.hash(taskId,type);
-    }
-
-    // 更新后继任务的最早开始时间和完成时间
-    public void updateAllChildEstEft() {
-        for(Task task: getChildList()){
-            task.setEst(Math.max(task.getEst(),finishTime));
-            task.setEft(task.getEst()+task.getRunTime());
-        }
-
+        return Objects.hash(mfId, taskId);
     }
 }

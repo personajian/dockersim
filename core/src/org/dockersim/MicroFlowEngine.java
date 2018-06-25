@@ -16,27 +16,22 @@ public class MicroFlowEngine {
 
     //private DockerAllocator dockerProvisioner;
 
+    public ScheduleAlgorithm getScheduleAlgorithm1(){
+        return scheduleAlgorithm;
+    }
+
     public ScheduleAlgorithm getScheduleAlgorithm(Parameters.ScheduleAlgorithm name) {
         ScheduleAlgorithm scheduleAlgorithm;
 
         switch (name){
-            case INVALID:
-                scheduleAlgorithm = new ScheduleAlgorithmDefault();
+            case SMWS:
+                scheduleAlgorithm = new ScheduleAlgorithmSMWS();
                 break;
-            case DEFAULT:
-                scheduleAlgorithm = new ScheduleAlgorithmDefault();
-                break;
-            case RANDOM:
-                scheduleAlgorithm = new ScheduleAlgorithmDefault();
-                break;
-            case HEFT:
-                scheduleAlgorithm = new ScheduleAlgorithmDefault();
-                break;
-            case DHEFT:
-                scheduleAlgorithm = new ScheduleAlgorithmDefault();
+            case FLTM:
+                scheduleAlgorithm = new ScheduleAlgorithmFLTM();
                 break;
             default:
-                scheduleAlgorithm = null;
+                scheduleAlgorithm = new ScheduleAlgorithmSMWS();
                 break;
         }
         return scheduleAlgorithm;
@@ -50,9 +45,8 @@ public class MicroFlowEngine {
      * @Param
      * @Return
      */
-    public MicroFlowEngine(List<VmType> vmTypeList, List<Vm> vmList, VmProvisoner vmProvisoner) {
+    public MicroFlowEngine(List<VmType> vmTypeList, VmProvisoner vmProvisoner) {
         this.vmTypeList = vmTypeList;
-        this.vmList = vmList;
         this.vmProvisoner = vmProvisoner;
     }
 
@@ -63,42 +57,21 @@ public class MicroFlowEngine {
      * @Return
      */
     public void process(List<MicroFlow> microFlows) {
-        if (Parameters.getScheduleAlgorithm().equals(Parameters.ScheduleAlgorithm.INVALID)) {
+        /*if (Parameters.getScheduleAlgorithm().equals(Parameters.ScheduleAlgorithm.INVALID)) {
             Log.printLine("The schedule algorithm is invaild!");
             return;
-        }
+        }*/
         scheduleAlgorithm = getScheduleAlgorithm(Parameters.getScheduleAlgorithm());
 
         scheduleAlgorithm.setMicroFlows(microFlows);
         scheduleAlgorithm.setVmTypeList(vmTypeList);
-        scheduleAlgorithm.setVmList(vmList);
-        scheduleAlgorithm.setVmProvisoner(vmProvisoner);
+        scheduleAlgorithm.setVmProvisioner(vmProvisoner);
 
         scheduleAlgorithm.runSchedule();
     }
 
     public double getTotalCost() {
-
-        double cost = 0;
-        int leaseTime = 0;
-        int releaseTime = 0;
-        double rentDuration = 0;
-        double rentDur = 0;
-
-        for (Vm vm : vmList) {
-            if(vm.getDockerList().size()!= 0){ // 统计按需实例上有真实Docker容器运行所产生的租赁费用
-                leaseTime = vm.getLeaseTime();
-                releaseTime = vm.getReleaseTime();
-                rentDuration = releaseTime - leaseTime;
-            }
-
-            rentDur = Math.ceil(rentDuration / 60.0);
-
-            // 租赁单位时长为1个小时，60分钟
-            cost += rentDur * vm.getVmType().cost;
-        }
-
-        return cost;
+        return scheduleAlgorithm.getVmProvisioner().getTotalCost();
     }
 
     public void scheduleResult() {

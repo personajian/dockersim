@@ -10,173 +10,47 @@ public class UtilAlgo {
      * 计算任务资源需求向量与VM剩余资源向量之间的相似性（KL-散度，相似熵）
      * KLD值越大，互补性越高
      * KLD值越小，相似性越高
+     *
      * @Param
      * @Return
      */
-    public  static double KLD(Task task, VmType vmType,Vm vm, int st) {
+    public static double Similarity1(ResourceVector resourceTask, ResourceVector resourceVM) {
 
-        // vm剩余资源向量
-        double vmFreeCpu;
-        double vmFreeRam;
-        double vmFreeSum;
-        double vmRamDiv;
-        double vmCpuDiv;
+        double similarity = 0.0;
 
-        if(vmType != null){
-            // vm剩余资源向量
-            vmFreeCpu = vmType.getVcpu();
-            vmFreeRam = vmType.getRam();
-        }else{
-            // vm剩余资源向量
-            vmFreeCpu = vm.getFreeVcpu(st);
-            vmFreeRam = vm.getFreeRam(st);
+        for (int i = 0; i < Parameters.RESOURE_NUM; i++) {
+            similarity += Math.log(resourceVM.getRes().get(i)) - Math.log(resourceTask.getRes().get(i));
         }
 
-        vmFreeSum = vmFreeCpu + vmFreeRam;
-        vmRamDiv = vmFreeRam / vmFreeSum;
-        vmCpuDiv = vmFreeCpu / vmFreeSum;
-
-
-        // 任务需求资源向量
-        double taskReqCpu = task.getVcpu();
-        double taskReqRam = task.getRam();
-        double taskReqSum = taskReqCpu + taskReqRam;
-        double taskCpuDiv = taskReqCpu / taskReqSum;
-        double taskRamDiv = taskReqRam / taskReqSum;
-
-        double KLD = vmCpuDiv * (Math.log(vmCpuDiv / taskCpuDiv)) +
-                vmRamDiv * (Math.log(vmRamDiv / taskRamDiv));
-
-        return KLD;
+        return similarity;
     }
-    /**
-     * 计算任务资源需求向量与VM剩余资源向量之间的相似性（KL-散度，相似熵）
-     * KLD值越大，互补性越高
-     * KLD值越小，相似性越高
-     * @Param
-     * @Return
-     */
-    public  static double RVD(Task task, VmType vmType,Vm vm, int st) {
 
-        // vm剩余资源向量
-        double vmFreeCpu;
-        double vmFreeRam;
-        double vmFreeSum;
-        double vmRamDiv;
-        double vmCpuDiv;
+    public static double Similarity2(ResourceVector resourceTask, ResourceVector resourceVM) {
 
-        if(vmType != null){
-            // vm剩余资源向量
-            vmFreeCpu = vmType.getVcpu();
-            vmFreeRam = vmType.getRam();
-        }else{
-            // vm剩余资源向量
-            vmFreeCpu = vm.getFreeVcpu(st);
-            vmFreeRam = vm.getFreeRam(st);
+        double similarity = 0.0;
+
+        for (int i = 0; i < Parameters.RESOURE_NUM; i++) {
+            similarity += Math.pow(resourceVM.getRes().get(i) - resourceTask.getRes().get(i), 2);
         }
 
-        vmFreeSum = vmFreeCpu + vmFreeRam;
-        vmRamDiv = vmFreeRam / vmFreeSum;
-        vmCpuDiv = vmFreeCpu / vmFreeSum;
-
-
-        // 任务需求资源向量
-        double taskReqCpu = task.getVcpu();
-        double taskReqRam = task.getRam();
-        double taskReqSum = taskReqCpu + taskReqRam;
-        double taskCpuDiv = taskReqCpu / taskReqSum;
-        double taskRamDiv = taskReqRam / taskReqSum;
-
-        double RVD = Math.pow(vmCpuDiv-taskCpuDiv,2) + Math.pow(vmRamDiv-taskRamDiv,2);
-
-        return RVD;
+        return similarity;
     }
 
-    /**
-     * 计算VM在安置完任务对应的容器后的负载均衡率
-     * LBR值越小，越均衡
-     * @Param
-     * @Return
-     */
-    public static double LBR(Task task, VmType vmType,Vm vm, int st) {
+    public static double Similarity3(ResourceVector resourceTask, ResourceVector resourceVM) {
 
-        // vm剩余资源向量
-        double vmFreeCpu;
-        double vmFreeRam;
-        double vmFreeSum;
+        double temp0 = 0.0;
+        double temp1 = 0.0;
+        double temp2 = 0.0;
 
-        // vm配置资源向量
-        double vmConfigCpu;
-        double vmConfigRam;
-        double vmConfigSum;
-        // vm配置资源向量 各资源分量的负载比例
-        double vmConfigCpuDiv;
-        double vmConfigRamDiv;
-
-        if(vmType != null){// 虚拟机类型
-            // vm剩余资源向量
-            vmFreeCpu = vmType.getVcpu();
-            vmFreeRam = vmType.getRam();
-
-            vmConfigCpu = vmType.getVcpu();
-            vmConfigRam = vmType.getRam();
-        }else{// 虚拟机实例
-            // vm剩余资源向量
-            vmFreeCpu = vm.getFreeVcpu(st);
-            vmFreeRam = vm.getFreeRam(st);
-            // vm配置资源向量
-            vmConfigCpu = vm.getVmType().getVcpu();
-            vmConfigRam = vm.getVmType().getRam();
+        for (int i = 0; i < Parameters.RESOURE_NUM; i++) {
+            temp0 = resourceTask.getRes().get(i) * resourceVM.getRes().get(i);
+            temp1 += Math.pow(resourceTask.getRes().get(i), 2);
+            temp2 += Math.pow(resourceVM.getRes().get(i), 2);
         }
 
-        vmConfigSum = vmConfigCpu + vmConfigRam;
-        // vm配置资源向量 各资源分量的负载比例
-        vmConfigCpuDiv = vmConfigCpu/vmConfigSum;
-        vmConfigRamDiv = vmConfigRam/vmConfigSum;
+        double similarity = -(temp0 / (Math.pow(temp1, 1 / 2) * Math.pow(temp2, 1 / 2)));
 
-
-        // 任务需求资源向量
-        double taskReqCpu = task.getVcpu();
-        double taskReqRam = task.getRam();
-        double taskReqSum = taskReqCpu + taskReqRam;
-
-        // vm剩余资源向量 任务部署后
-        vmFreeCpu -= taskReqCpu;
-        vmFreeRam -= taskReqRam;
-        vmFreeSum = vmFreeCpu + vmFreeRam;
-        double vmFreeCpuDiv = vmFreeCpu/vmFreeSum;
-        double vmFreeRamDiv = vmFreeRam/vmFreeSum;
-
-        // 部署容器后，vm的资源负载均衡率
-        double LBR = Math.pow((Math.pow(vmFreeCpuDiv - vmConfigCpuDiv,2) +
-                Math.pow(vmFreeRamDiv - vmConfigRamDiv,2)),1/2);
-
-        return LBR;
-    }
-
-    // 比较vm剩余资源向量 与 task需求资源向量 之间大小
-    public static boolean enoughRes(VmType vmType, Task task){
-        if(vmType.getVcpu() >= task.getVcpu()
-                && vmType.getRam()>= task.getRam()){
-            return true;
-        }else
-            return false;
-    }
-
-    // 比较vm配置资源向量 与 task需求资源向量 之间大小
-    public static boolean enoughRes(Vm vm, Task task,int time){
-        if(vm.getFreeVcpu(time) >= task.getVcpu()
-                && vm.getFreeRam(time)>= task.getRam()){
-            return true;
-        }else
-            return false;
-    }
-
-    public static boolean nullRes(Task task){
-        if(task.getVcpu() + task.getRam() < 0.000001){
-            return true;
-        }else
-            return false;
+        return similarity;
     }
 
 }

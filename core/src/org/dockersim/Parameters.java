@@ -27,13 +27,37 @@ import java.util.List;
  */
 public class Parameters {
 
+    public static double[] DEADLINWFACTORS = {1.2, 1.3, 1.7};
+
+    public static double PRICECPU = 0.00001406;
+
+    public static double PRICERAM = 0.00000353;
+
+    public static int RESOURE_NUM  = 2;
+
+    public static double BTU = 60.0;
+
+    // 工作流集合大小{ 20, 40, 60, 80, 100 }
+    public static int[] workflowNumbers = {10, 20, 30, 40, 50};
+    // 任务大小{ 50, 100, 200, 500 }
+    public static int[] taskNumbers = {30, 50, 100, 150};
+
+
     /**
      * 调度算法
      *
      */
     public enum ScheduleAlgorithm {
-        INVALID, DEFAULT, RANDOM, HEFT, DHEFT
+        SMWS, FLTM
+    }
 
+    /**
+     * 租赁VM规则的参数
+     * @Param
+     * @Return
+     */
+    public enum SubdeadlineDivisionRule {
+        PDD, EDD, RCPD
     }
 
     /**
@@ -50,30 +74,31 @@ public class Parameters {
      * @Param
      * @Return
      */
-    public enum SelectVmStRule {
+    public enum SelectVmRule {
         KLD, RVD, LBR
     }
 
 
     /**
      * 微服务工作排序规则的参数
-     * CP：关键路径长度
-     * AT：到达时间
-     * DL：截止期
+     * SWS1：紧急程度
+     * SWS2：资源需求量
      * @Param
      * @Return
      */
-    public enum SortMicroFlows {
-        CP, AT, DL
+    public enum SortMicroFlowsRule {
+        SWS1, SWS2
     }
 
-
+    public static SubdeadlineDivisionRule subdeadlineDivisionRule;
 
     public static LeaseVmTypeRule leaseVmTypeRule;
 
-    public static SelectVmStRule selectVmStRule;
+    public static SelectVmRule selectVmRule;
 
     private static ScheduleAlgorithm scheduleAlgorithm;
+
+    public static SortMicroFlowsRule sortMicroFlowsRule;
 
     public static ScheduleAlgorithm getScheduleAlgorithm() {
         return scheduleAlgorithm;
@@ -200,11 +225,16 @@ public class Parameters {
     private static CostModel costModel = CostModel.DATACENTER;
     
 
-    public static void init(ScheduleAlgorithm scheduer,
-                            LeaseVmTypeRule leasingVmTypeRule, SelectVmStRule selectingVmStRule){
-        scheduleAlgorithm = scheduer;
+    public static void init(ScheduleAlgorithm scheduler,
+                            SortMicroFlowsRule sortingMicroFlowsRule,
+                            SubdeadlineDivisionRule subdeadlineDivisingRule,
+                            LeaseVmTypeRule leasingVmTypeRule,
+                            SelectVmRule selectingVmRule){
+        scheduleAlgorithm = scheduler;
+        sortMicroFlowsRule =  sortingMicroFlowsRule;
+        subdeadlineDivisionRule = subdeadlineDivisingRule;
         leaseVmTypeRule = leasingVmTypeRule;
-        selectVmStRule = selectingVmStRule;
+        selectVmRule = selectingVmRule;
     }
 /*
     public static void init(
@@ -229,7 +259,7 @@ public class Parameters {
 */
 
     /**
-     * A static function so that you can specify them in any place
+     * A static function so that you can specify them in any placeDockerOnVm
      *
      * @param vm, the number of vms
      * @param dax, the list of DAX paths 

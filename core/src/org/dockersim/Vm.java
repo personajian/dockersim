@@ -1,9 +1,6 @@
 package org.dockersim;
 
-import org.dockersim.Log;
-
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 
@@ -19,23 +16,48 @@ public class Vm {
 
     private int vmId;
 
-    //private int leaseTime;
+    private boolean leased;
 
-    //private int releaseTime;
+    private int leaseBTU;
 
-    private List<Docker> dockerList = new ArrayList<>();
+    private int releaseBTU;
 
-    public Vm() {
+    public boolean isLeased() {
+        return leased;
     }
+
+    public void setLeased(boolean leased) {
+        this.leased = leased;
+    }
+
+    public int getLeaseBTU() {
+        return leaseBTU;
+    }
+
+    public void setLeaseBTU(int leaseBTU) {
+        this.leaseBTU = leaseBTU;
+    }
+
+    public int getReleaseBTU() {
+        return releaseBTU;
+    }
+
+    public void setReleaseBTU(int releaseBTU) {
+        this.releaseBTU = releaseBTU;
+    }
+
+    private List<Docker> dockerList;
+
+    public Vm(){}
 
     public Vm(VmType vmType) {
         this.vmType = vmType;
     }
 
-    public Vm(VmType vmType, int vmId, List<Docker> dockerList) {
+    public Vm(VmType vmType, int vmId) {
         this.vmType = vmType;
         this.vmId = vmId;
-        this.dockerList = dockerList;
+        this.dockerList = new ArrayList<>();
     }
 
     /**
@@ -43,72 +65,20 @@ public class Vm {
      * @Param
      * @Return
      */
-    public List<Docker> getOccupyDockerList(int time) {
+    public List<Docker> getOccupyDockerList(double time) {
         List<Docker> occupyDockerList = new ArrayList<>();
 
-        /*if (time < leaseTime || time > releaseTime) {
+        /*if (time < leaseBTU || time > releaseBTU) {
             Log.printLine("Error in time out vm lease time and release time!");
             return occupyDockerList;
         }*/
 
         for (Docker d : dockerList) {
-            if (d.getTask().getStartTime() <= time && d.getTask().getFinishTime() > time) {
+            if (d.getStartTime() <= time && d.getEndTime() > time) {
                 occupyDockerList.add(d);
             }
         }
         return occupyDockerList;
-    }
-
-    /**
-     * 获取t时刻，VM实例上所有运行Docker容器占用的内存（memory，RAM）
-     * @Param
-     * @Return
-     */
-    public double getOccupyRam(int time) {
-
-        List<Docker> occupiedDockerList = getOccupyDockerList(time);
-        double sumRam = 0;
-        for (Docker d : occupiedDockerList) {
-            sumRam += d.getTask().getRam();
-        }
-
-        return sumRam;
-    }
-
-    /**
-     * 获取t时刻，VM实例上运行的所有Docker容器实例占用的CPU个数
-     * @Param
-     * @Return
-     */
-    public double getOccupyVcpu(int time) {
-
-        List<Docker> occupiedDockerList = getOccupyDockerList(time);
-        double sumVcpu = 0;
-        for (Docker d : occupiedDockerList) {
-            sumVcpu += d.getTask().getVcpu();
-        }
-
-        return sumVcpu;
-    }
-
-    /**
-     * 获取t时刻，VM实例剩余的RAM
-     * @Param
-     * @Return
-     */
-    public double getFreeRam(int time) {
-
-        return vmType.ram - getOccupyRam(time);
-    }
-
-    /**
-     * 获取t时刻，VM实例剩余的vCPU
-     * @Param
-     * @Return
-     */
-    public double getFreeVcpu(int time) {
-
-        return vmType.vcpu - getOccupyVcpu(time);
     }
 
     public VmType getVmType() {
@@ -125,32 +95,6 @@ public class Vm {
 
     public void setVmId(int vmId) {
         this.vmId = vmId;
-    }
-
-    public int getLeaseTime() {
-
-        int minST = Integer.MAX_VALUE;
-        int ST = Integer.MAX_VALUE;
-
-        for(Docker docker:dockerList){
-            ST = docker.getTask().getStartTime();
-            minST = Math.min(minST,ST);
-        }
-
-        return minST;
-    }
-
-    public int getReleaseTime() {
-
-        int maxFT = Integer.MIN_VALUE;
-        int FT = Integer.MIN_VALUE;
-
-        for(Docker docker:dockerList){
-            FT = docker.getTask().getFinishTime();
-            maxFT = Math.max(maxFT,FT);
-        }
-
-        return maxFT;
     }
 
     public List<Docker> getDockerList() {
@@ -182,4 +126,32 @@ public class Vm {
                 ",vmType=" + vmType +
                 '}';
     }
+
+    public boolean isIdle(double time) {
+        List<Docker> occupiedDockerList = getOccupyDockerList(time);
+
+        return (occupiedDockerList.isEmpty() || occupiedDockerList.size()==0)?true:false;
+    }
+
+
+
+    public ResourceVector getOccupyResource(double time) {
+        List<Docker> occupiedDockerList = getOccupyDockerList(time);
+        ResourceVector occupyResource = new ResourceVector();
+
+        if(occupiedDockerList.size() != 0){
+            for (Docker d : occupiedDockerList) {
+                occupyResource = ResourceVector.addResource(occupyResource,d.getTask().getResourceVector());
+            }
+        }
+        return occupyResource;
+    }
+
+
+    public ResourceVector getFreeResource(double time) {
+        ResourceVector occupyResource = getOccupyResource(time);
+        ResourceVector differ = ResourceVector.differResource(getVmType().getResourceVector(),occupyResource);
+        return differ;
+    }
+
 }

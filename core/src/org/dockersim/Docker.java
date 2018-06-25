@@ -7,19 +7,19 @@ package org.dockersim;
  */
 public class Docker {
 
+    public static int DOCKER_ID_COUNTER = 0;
+
     private int dockerId;
 
     private Task task;
 
-    private int vcpu;
+    private double startTime;
 
-    private int ram;
-
-    private int startTime;
-
-    private int endTime;
+    private double endTime;
 
     public Docker(Task task) {
+        DOCKER_ID_COUNTER++;
+        dockerId = DOCKER_ID_COUNTER;
         this.task = task;
     }
 
@@ -31,35 +31,19 @@ public class Docker {
         this.dockerId = dockerId;
     }
 
-    public int getVcpu() {
-        return vcpu;
-    }
-
-    public void setVcpu(int vcpu) {
-        this.vcpu = vcpu;
-    }
-
-    public int getRam() {
-        return ram;
-    }
-
-    public void setRam(int ram) {
-        this.ram = ram;
-    }
-
-    public int getStartTime() {
+    public double getStartTime() {
         return startTime;
     }
 
-    public void setStartTime(int startTime) {
+    public void setStartTime(double startTime) {
         this.startTime = startTime;
     }
 
-    public int getEndTime() {
+    public double getEndTime() {
         return endTime;
     }
 
-    public void setEndTime(int endTime) {
+    public void setEndTime(double endTime) {
         this.endTime = endTime;
     }
 

@@ -1,5 +1,7 @@
 package org.dockersim;
 
+import java.util.List;
+
 /**
  *虚拟机类型实体类
  *
@@ -16,23 +18,28 @@ public class VmType {
 
     protected double mips;
 
-    protected int vcpu;
-
-    protected int ram;
-
     protected long bw;
 
     protected double cost;
 
+    private ResourceVector resourceVector;
+
+    public ResourceVector getResourceVector() {
+        return resourceVector;
+    }
+
+    public void setResourceVector(ResourceVector resourceVector) {
+        this.resourceVector = resourceVector;
+    }
+
     public VmType() {
     }
 
-    public VmType(int id, String name, String csp, double mips, int vcpu, int ram, long bw, double cost) {
+    public VmType(int id, String name, String csp, ResourceVector resourceVector,double cost) {
         this.id = id;
         this.name = name;
         this.csp = csp;
-        this.vcpu = vcpu;
-        this.ram = ram;
+        this.resourceVector = resourceVector;
         this.cost = cost;
     }
 
@@ -68,22 +75,6 @@ public class VmType {
         this.mips = mips;
     }
 
-    public int getRam() {
-        return ram;
-    }
-
-    public void setRam(int ram) {
-        this.ram = ram;
-    }
-
-    public int getVcpu() {
-        return vcpu;
-    }
-
-    public void setVcpu(int vcpu) {
-        this.vcpu = vcpu;
-    }
-
     public long getBw() {
         return bw;
     }
@@ -106,8 +97,6 @@ public class VmType {
                 "id=" + id +
                 ", name='" + name + '\'' +
                 ", csp='" + csp + '\'' +
-                ", vcpu=" + vcpu +
-                ", ram=" + ram +
                 ", cost=" + cost +
                 '}';
     }
